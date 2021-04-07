@@ -42,4 +42,7 @@ Route::prefix('cart')->group(function() {
     Route::get('/add/{id}', [CartController::class, 'addToCart']);
     Route::get('/update/{id}/{qty}', [CartController::class, 'updateCart']);
     Route::get('/delete/{id}', [CartController::class, 'deleteCart']);
+    Route::get('/checkout', [CartController::class, 'checkout']);
+    Route::get('/complete', [CartController::class, 'complete']);
+    Route::get('/finish', [CartController::class, 'finish_order']);
 });

@@ -64,7 +64,9 @@
             @endif
         </div>
 
-        <a href="{{ URL::to('/') }}" class="btn btn-default"> ย้อนกลับ </a>
+        <a href="{{ URL::to('/') }}" class="btn btn-default">
+            <i class="fa fa-chevron-left"></i> ย้อนกลับ
+        </a>
 
         <div class="pull-right">
             <a href="{{ URL::to('cart/checkout') }}" class="btn btn-primary">

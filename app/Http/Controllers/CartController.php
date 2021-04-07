@@ -46,6 +46,16 @@ class CartController extends Controller
 
     public function updateCart($id, $qty) {
         $cart_items = Session::get('cart_items');
+        
+        $product = Product::find($id);
+        $stock_qty = $product->stock_qty;
+
+        if ($qty > $stock_qty) {
+            $qty = $stock_qty;
+        } else if ($qty < 0) {
+            $qty = 0;
+        }
+
         $cart_items[$id]['qty'] = $qty;
         Session::put('cart_items', $cart_items);
         return redirect('cart/view');
@@ -56,5 +66,47 @@ class CartController extends Controller
         unset($cart_items[$id]);
         Session::put('cart_items', $cart_items);
         return redirect('cart/view');
+    }
+
+    public function checkout() {
+        $cart_items = Session::get('cart_items');
+
+        return view('cart/checkout', compact('cart_items'));
+    }
+    
+    public function complete(Request $request) {
+        $cart_items = Session::get('cart_items');
+        $cust_name = $request->cust_name;
+        $cust_email = $request->cust_email;
+        $po_no = 'PO'.date("Ymd");
+        $po_date = date("Y-m-d H:i:s");
+        $total_amount = 0;
+
+        foreach ($cart_items as $item) {
+            $total_amount += $item['price'] * $item['qty'];
+        }
+
+        $html_output = view ('cart/complete', compact('cart_items', 'cust_name', 'cust_email', 'po_no', 'po_date', 'total_amount'))->render();
+
+        $mpdf = new \Mpdf\Mpdf();
+        $mpdf->debug = true;
+        $mpdf->WriteHTML($html_output);
+        $mpdf->Output('output.pdf', 'I');
+
+        return $resp->withHeader("Content-type", "application/pdf");
+    }
+
+    public function finish_order() {
+        $cart_items = Session::get('cart_items');
+
+        foreach ($cart_items as $item) {
+            $product = Product::find($item['id']);
+            $product->stock_qty = $product->stock_qty - $item['qty'];
+            $product->save();
+        }
+
+        Session::remove('cart_items');
+
+        return redirect('/');
     }
 }
